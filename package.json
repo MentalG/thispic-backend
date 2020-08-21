@@ -6,12 +6,12 @@
     "type": "git",
     "url": "git://https://github.com/MentalG/thispic-backend"
   },
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon app.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Illia Hromov",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
