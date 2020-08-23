@@ -1,11 +1,14 @@
 const express = require('express');
 const Post = require('../models/post');
+const multer = require('multer');
+const upload = multer({dest: 'uploads/'})
 
 const router = express.Router();
 
 //Get create post
-router.post('/', async (req, res) => {
-  const post = new Post({
+router.post('/', upload.single('productImage'), async (req, res) => {
+  console.log(req.file);
+    const post = new Post({
     title: req.body.title,
     description: req.body.description,
   });
