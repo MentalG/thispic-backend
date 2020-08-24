@@ -13,6 +13,7 @@ mongoose.connect(DB_CONNECTION, connectionConfig, () => console.log('Connected')
 
 app.use(bodyParser.json())
 app.use(cors())
+app.use('/uploads', express.static('uploads'))
 app.get('/', (req, res) => res.send('We are on home'))
 app.use('/posts', postsRoutes);
 app.listen(3000);
