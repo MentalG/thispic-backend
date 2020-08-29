@@ -1,5 +1,5 @@
 const express = require('express');
-const Post = require('../models/post');
+const Image = require('../models/image');
 const multer = require('multer');
 
 const router = express.Router();
@@ -8,7 +8,9 @@ const storage = multer.diskStorage({
     cb(null, './uploads/')
   },
   filename: (req, file, cb) => {
-    cb(null, `${file.originalname}`)
+    const date = new Date().toISOString().split(':').join('-');
+    const name = date + file.originalname;
+    cb(null, name)
   }
 })
 const limits = {
@@ -27,60 +29,60 @@ const upload = multer({
   fileFilter
 })
 
-//Get create post
+//Get create image
 router.post('/', upload.single('productImage'), async (req, res) => {
-    const post = new Post({
+    const image = new Image({
     title: req.body.title,
     description: req.body.description,
     postImage: req.file.path
   });
 
   try {
-    const savedPost = await post.save();
-    res.json(savedPost);
+    const savedImage = await image.save();
+    res.json(savedImage);
   } catch (error) {
     res.json({ message: error });
   }
 });
 
-//Get all posts
+//Get all images
 router.get('/', async (req, res) => {
   try {
-    const posts = await Post.find();
-    res.json(posts);
+    const images = await Image.find();
+    res.json(images);
   } catch (error) {
     res.json(error);
   }
 });
 
-//Get specific post
-router.get('/:postId', async (req, res) => {
+//Get specific image
+router.get('/:imageId', async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId);
-    res.json(post);
+    const image = await Image.findById(req.params.imageId);
+    res.json(image);
   } catch (error) {
     res.json({ message: error });
   }
 });
 
-//Delete post
-router.delete('/:postId', async (req, res) => {
+//Delete image
+router.delete('/:imageId', async (req, res) => {
   try {
-    const post = await Post.remove({ _id: req.params.postId });
-    res.json(post);
+    const image = await Image.remove({ _id: req.params.imageId });
+    res.json(image);
   } catch (error) {
     res.json({ message: error });
   }
 });
 
-//Update post
-router.patch('/:postId', async (req, res) => {
+//Update image
+router.patch('/:imageId', async (req, res) => {
   try {
-    const post = await Post.updateOne(
-      { _id: req.params.postId },
+    const image = await Image.updateOne(
+      { _id: req.params.imageId },
       { $set: { title: req.body.title } }
     );
-    res.json(post);
+    res.json(image);
   } catch (error) {
     res.json({ message: error });
   }

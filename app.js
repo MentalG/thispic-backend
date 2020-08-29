@@ -1,7 +1,7 @@
 require('dotenv/config');
 const express = require('express');
 const mongoose = require('mongoose');
-const postsRoutes = require('./src/routes/posts');
+const imagesRoutes = require('./src/routes/images');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
@@ -15,5 +15,5 @@ app.use(bodyParser.json())
 app.use(cors())
 app.use('/uploads', express.static('uploads'))
 app.get('/', (req, res) => res.send('We are on home'))
-app.use('/posts', postsRoutes);
+app.use('/images', imagesRoutes);
 app.listen(3000);
