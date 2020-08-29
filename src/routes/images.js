@@ -1,6 +1,7 @@
 const express = require('express');
 const Image = require('../models/image');
 const multer = require('multer');
+const getCountOfColors = require('../../parser');
 
 const router = express.Router();
 const storage = multer.diskStorage({
@@ -31,6 +32,8 @@ const upload = multer({
 
 //Get create image
 router.post('/', upload.single('productImage'), async (req, res) => {
+  console.log(req.file.path);
+    console.log(await getCountOfColors(req.file.path));
     const image = new Image({
     title: req.body.title,
     description: req.body.description,

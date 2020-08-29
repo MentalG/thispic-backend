@@ -3,8 +3,8 @@ const pixel = require('pixel');
 const COLORS = require('./src/constants/colors');
 const countBy = require('lodash.countby');
 
-const getImageData = async () => {
-    const image = fs.readFileSync('./src/materials/test.jpg');
+const getImageData = async (path) => {
+    const image = fs.readFileSync(path);
     const imageData = await pixel(image);
 
     return imageData[0].data
@@ -49,9 +49,9 @@ const roundColor = (color) => {
   return Math.round(color / 51) * 51;
 };
 
-const getCountOfColors = async () => {
+const getCountOfColors = async (path) => {
   try {
-    const data = await getImageData();
+    const data = await getImageData(path);
     const pixels = data.length / 4;
     const pixelsColors = getPixelColors(data, pixels);
     const closestColors = getClosestColor(pixelsColors);
@@ -61,3 +61,5 @@ const getCountOfColors = async () => {
     console.log(error);
   }
 }
+
+module.exports = getCountOfColors
