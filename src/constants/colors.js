@@ -22,6 +22,7 @@ const COLORS = {
     'FF3333',
   ],
   orange: [
+    'FFAA00',
     'FFCC99',
     'CC9900',
     'CC9933',
@@ -109,6 +110,7 @@ const COLORS = {
     '33FF99',
   ],
   blue: [
+    '00AAFF',
     '9999CC',
     '336699',
     '99CCFF',
@@ -163,6 +165,7 @@ const COLORS = {
     '3399CC',
   ],
   purple: [
+    'AA00FF',
     '996699',
     'CCCCFF',
     '666699',
@@ -222,7 +225,7 @@ const COLORS = {
     'FF99FF',
     'FFCCFF',
   ],
-  brown: ['663300', '996600', '996633'],
+  brown: ['663300', '996600', '996633', '8B4513'],
   grey: ['CCCCCC', '999999', '666666', '333333'],
   black: ['000000'],
   white: ['FFFFFF'],

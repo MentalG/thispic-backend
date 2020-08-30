@@ -1,7 +1,7 @@
 const express = require('express');
 const Image = require('../models/image');
 const multer = require('multer');
-const getCountOfColors = require('../../parser');
+const parser = require('../../parser');
 
 const router = express.Router();
 const storage = multer.diskStorage({
@@ -32,12 +32,12 @@ const upload = multer({
 
 //Get create image
 router.post('/', upload.single('productImage'), async (req, res) => {
-  console.log(req.file.path);
-    console.log(await getCountOfColors(req.file.path));
+    const colors = await parser.getCountOfColors(req.file.path);
     const image = new Image({
-    title: req.body.title,
-    description: req.body.description,
-    postImage: req.file.path
+    name: req.body.name,
+    dominant: colors.dominant,
+    secondary: colors.secondary,
+    imageUrl: req.file.path
   });
 
   try {
@@ -49,19 +49,34 @@ router.post('/', upload.single('productImage'), async (req, res) => {
 });
 
 //Get all images
-router.get('/', async (req, res) => {
-  try {
-    const images = await Image.find();
-    res.json(images);
-  } catch (error) {
-    res.json(error);
-  }
-});
+// router.get('/', async (req, res) => {
+//   try {
+//     const images = await Image.find();
+//     res.json(images);
+//   } catch (error) {
+//     res.json(error);
+//   }
+// });
 
 //Get specific image
-router.get('/:imageId', async (req, res) => {
+// router.get('/:imageId', async (req, res) => {
+//   try {
+//     const image = await Image.findById(req.params.imageId);
+//     res.json(image);
+//   } catch (error) {
+//     res.json({ message: error });
+//   }
+// });
+
+//get image with dominant color
+router.get('/', async (req, res) => {
+  const dominantColorName = parser.getNameOfColor(req.query.dominant)
+  const secondaryColorsNames = req.query.secondary.map((item) => {
+    return parser.getNameOfColor(item)
+  })
+
   try {
-    const image = await Image.findById(req.params.imageId);
+    const image = await Image.find({dominant: dominantColorName, secondary: {$in: secondaryColorsNames}});
     res.json(image);
   } catch (error) {
     res.json({ message: error });
@@ -83,7 +98,7 @@ router.patch('/:imageId', async (req, res) => {
   try {
     const image = await Image.updateOne(
       { _id: req.params.imageId },
-      { $set: { title: req.body.title } }
+      { $set: { title: req.body.name } }
     );
     res.json(image);
   } catch (error) {
