@@ -10,30 +10,29 @@ const getImageData = async (path) => {
   return imageData[0].data;
 };
 
-const getPixelColors = (data, pixels) => {
-  const sortedColors = [];
+const getColorsNames = (data, pixels) => {
+  const keys = Object.keys(COLORS);
+  const nameColors = [];
+  let i = 0;
+  let j = 0;
+  let k = 0;
 
-  for (let i = 0; i < pixels; i++) {
-    let result = data.slice(i * 4, i * 4 + 3);
-    sortedColors.push(result);
+  while (i < pixels) {
+    const colorRgb = data.slice(i * 4, i * 4 + 3);
+    const colorHex = rgbToHex(...colorRgb);
+
+    keys.map((nameColor) => {
+      COLORS[nameColor].map((item) => {
+        if (item === colorHex) {
+          nameColors.push(nameColor);
+        }
+      });
+    });
+
+    i = ++i;
   }
 
-  return sortedColors;
-};
-
-const getClosestColor = (pixelsColors) => {
-  const closestColors = [];
-
-  pixelsColors.map((color) => {
-    const result = rgbToHex(...color);
-    for (let key in COLORS) {
-      COLORS[key].map((item) => {
-        if (item === result) return closestColors.push(key);
-      });
-    }
-  });
-
-  return closestColors;
+  return nameColors;
 };
 
 const rgbToHex = (r, g, b) => {
@@ -50,38 +49,49 @@ const roundColor = (color) => {
 };
 
 const distributeColors = (colors) => {
+  const highColors = Object.keys(colors).filter((item) => colors[item] > 2000);
+  const deletedLowColors = dumpColors(colors, highColors);
   const sortedColors = [];
   const distributedColors = {
     dominant: '',
-    secondary: []
+    secondary: [],
   };
 
-  Object.keys(colors).map((item) => {
+  Object.keys(deletedLowColors).map((item) => {
     sortedColors.push({
       name: item,
-      color: colors[item]
-    })
+      color: deletedLowColors[item],
+    });
   });
 
-  sortedColors.sort((a, b) => b.color - a.color)
+  sortedColors.sort((a, b) => b.color - a.color);
   sortedColors.map((item, index) => {
     if (index === 0) {
-      distributedColors.dominant = item.name
+      distributedColors.dominant = item.name;
     } else {
       distributedColors.secondary.push(item.name);
     }
-  })
+  });
 
   return distributedColors;
+};
+
+const dumpColors = (data, highColors) => {
+  const result = {};
+
+  highColors.map((item) => {
+    result[item] = data[item];
+  });
+
+  return result;
 };
 
 const getCountOfColors = async (path) => {
   try {
     const data = await getImageData(path);
     const pixels = data.length / 4;
-    const pixelsColors = getPixelColors(data, pixels);
-    const closestColors = getClosestColor(pixelsColors);
-    const result = distributeColors(countBy(closestColors));
+    const pixelsColors = getColorsNames(data, pixels);
+    const result = distributeColors(countBy(pixelsColors));
 
     return result;
   } catch (error) {
@@ -90,7 +100,7 @@ const getCountOfColors = async (path) => {
 };
 
 const getNameOfColor = (color) => {
-  let name; 
+  let name;
 
   for (let key in COLORS) {
     COLORS[key].map((item) => {
@@ -100,12 +110,12 @@ const getNameOfColor = (color) => {
     });
   }
 
-  return name
-}
+  return name;
+};
 
 const parser = {
   getCountOfColors,
-  getNameOfColor
-}
+  getNameOfColor,
+};
 
 module.exports = parser;

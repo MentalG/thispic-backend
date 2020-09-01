@@ -31,21 +31,24 @@ const upload = multer({
 })
 
 //Get create image
-router.post('/', upload.single('productImage'), async (req, res) => {
-    const colors = await parser.getCountOfColors(req.file.path);
-    const image = new Image({
-    name: req.body.name,
-    dominant: colors.dominant,
-    secondary: colors.secondary,
-    imageUrl: req.file.path
-  });
+router.post('/', upload.array('productImage', 10), async (req, res) => {
 
-  try {
-    const savedImage = await image.save();
-    res.json(savedImage);
-  } catch (error) {
-    res.json({ message: error });
-  }
+    req.files.map(async (item, index) => {
+      const colors = await parser.getCountOfColors(item.path);
+      const image = new Image({
+      name: req.body.name,
+      dominant: colors.dominant,
+      secondary: colors.secondary,
+      imageUrl: item.path
+    });
+  
+    try {
+      const savedImage = await image.save();
+      res.json(savedImage);
+    } catch (error) {
+      res.json({ message: error });
+    }
+    })
 });
 
 //Get all images
@@ -70,14 +73,21 @@ router.post('/', upload.single('productImage'), async (req, res) => {
 
 //get image with dominant color
 router.get('/', async (req, res) => {
-  const dominantColorName = parser.getNameOfColor(req.query.dominant)
-  const secondaryColorsNames = req.query.secondary.map((item) => {
+  const { dominant, secondary} = req.query;
+  const secondaryArr = ( typeof secondary != 'undefined' && secondary instanceof Array ) ? secondary : [secondary]
+  const dominantColorName = parser.getNameOfColor(dominant)
+  const secondaryColorsNames = secondaryArr.map((item) => {
     return parser.getNameOfColor(item)
   })
 
   try {
-    const image = await Image.find({dominant: dominantColorName, secondary: {$in: secondaryColorsNames}});
-    res.json(image);
+    if (!!Object.keys(req.query).length) {
+      const image = await Image.find({dominant: dominantColorName, secondary: {$in: secondaryColorsNames}});
+      return res.json(image);
+    } else {
+      const image = await Image.find();
+      return res.json(image);
+    }
   } catch (error) {
     res.json({ message: error });
   }
