@@ -32,8 +32,7 @@ const upload = multer({
 
 //Get create image
 router.post('/', upload.array('productImage', 10), async (req, res) => {
-
-    req.files.map(async (item, index) => {
+  req.files.map(async (item, index) => {
       const colors = await parser.getCountOfColors(item.path);
       const image = new Image({
       name: req.body.name,
@@ -48,7 +47,7 @@ router.post('/', upload.array('productImage', 10), async (req, res) => {
     } catch (error) {
       res.json({ message: error });
     }
-    })
+  })
 });
 
 //Get all images

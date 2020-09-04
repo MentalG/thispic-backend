@@ -2,25 +2,28 @@ const fs = require('fs');
 const pixel = require('pixel');
 const COLORS = require('./src/constants/colors');
 const countBy = require('lodash.countby');
+const sharp = require('sharp');
 
 const getImageData = async (path) => {
   const image = fs.readFileSync(path);
-  const imageData = await pixel(image);
+  const resizedImage = await sharp(image).resize(640, 360).toBuffer()
+  .then(data => data)
+  .catch( err => console.log(err));
+  const resizedImageData = await pixel(resizedImage);
 
-  return imageData[0].data;
+  return resizedImageData[0].data;
 };
 
 const getColorsNames = (data, pixels) => {
   const keys = Object.keys(COLORS);
   const nameColors = [];
   let i = 0;
-  let j = 0;
-  let k = 0;
 
+  // console.time('pixels map')
   while (i < pixels) {
-    const colorRgb = data.slice(i * 4, i * 4 + 3);
+    const colorRgb = data.slice(i * 8, i * 8 + 3);
     const colorHex = rgbToHex(...colorRgb);
-
+    
     keys.map((nameColor) => {
       COLORS[nameColor].map((item) => {
         if (item === colorHex) {
@@ -31,6 +34,7 @@ const getColorsNames = (data, pixels) => {
 
     i = ++i;
   }
+  // console.timeEnd('pixels map')
 
   return nameColors;
 };
