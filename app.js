@@ -16,4 +16,4 @@ app.use(cors())
 app.use('/uploads', express.static('uploads'))
 app.get('/', (req, res) => res.send('We are on home'))
 app.use('/images', imagesRoutes);
-app.listen(3000);
+app.listen(5000);

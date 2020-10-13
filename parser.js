@@ -3,10 +3,11 @@ const pixel = require('pixel');
 const COLORS = require('./src/constants/colors');
 const countBy = require('lodash.countby');
 const sharp = require('sharp');
+const sha256 = require('js-sha256').sha256;
 
 const getImageData = async (path) => {
   const image = fs.readFileSync(path);
-  const resizedImage = await sharp(image).resize(640, 360).toBuffer()
+  const resizedImage = await sharp(image).resize(1280, 720).toBuffer()
   .then(data => data)
   .catch( err => console.log(err));
   const resizedImageData = await pixel(resizedImage);
@@ -53,7 +54,8 @@ const roundColor = (color) => {
 };
 
 const distributeColors = (colors) => {
-  const highColors = Object.keys(colors).filter((item) => colors[item] > 2000);
+  const minPixelValue = 0;
+  const highColors = Object.keys(colors).filter((item) => colors[item] > minPixelValue);
   const deletedLowColors = dumpColors(colors, highColors);
   const sortedColors = [];
   const distributedColors = {
@@ -90,6 +92,14 @@ const dumpColors = (data, highColors) => {
   return result;
 };
 
+const getHash256 = async (path) => {
+  const data = await getImageData(path);
+  const hash = sha256.create();
+  hash.update(data);
+  
+  return hash.hex()
+}
+
 const getCountOfColors = async (path) => {
   try {
     const data = await getImageData(path);
@@ -120,6 +130,7 @@ const getNameOfColor = (color) => {
 const parser = {
   getCountOfColors,
   getNameOfColor,
+  getHash256
 };
 
 module.exports = parser;

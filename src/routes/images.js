@@ -30,15 +30,21 @@ const upload = multer({
   fileFilter
 })
 
-//Get create image
-router.post('/', upload.array('productImage', 10), async (req, res) => {
+//Post create image
+router.post('/add', upload.array('productImage', 10), async (req, res) => {
   req.files.map(async (item, index) => {
-      const colors = await parser.getCountOfColors(item.path);
-      const image = new Image({
+    const colors = await parser.getCountOfColors(item.path);
+    const hash = await parser.getHash256(item.path);
+    const isUnique = !(await Image.find({hash: hash })).length;
+
+    if (!isUnique) return res.json({message: 'image like this is already exist'})
+
+    const image = new Image({
       name: req.body.name,
       dominant: colors.dominant,
       secondary: colors.secondary,
-      imageUrl: item.path
+      imageUrl: item.path,
+      hash: hash
     });
   
     try {
@@ -50,29 +56,21 @@ router.post('/', upload.array('productImage', 10), async (req, res) => {
   })
 });
 
-//Get all images
-// router.get('/', async (req, res) => {
-//   try {
-//     const images = await Image.find();
-//     res.json(images);
-//   } catch (error) {
-//     res.json(error);
-//   }
-// });
+//GET download image by hash 
+router.get('/:imageHash', async (req, res) => {
+  try {
+    const image = (await Image.find({hash: req.params.imageHash}))[0]
 
-//Get specific image
-// router.get('/:imageId', async (req, res) => {
-//   try {
-//     const image = await Image.findById(req.params.imageId);
-//     res.json(image);
-//   } catch (error) {
-//     res.json({ message: error });
-//   }
-// });
+    res.download(image.imageUrl)
+  } catch (error) {
+    res.json({message: error})
+  }
+});
 
 //get image with dominant color
 router.get('/', async (req, res) => {
   const { dominant, secondary} = req.query;
+
   const secondaryArr = ( typeof secondary != 'undefined' && secondary instanceof Array ) ? secondary : [secondary]
   const dominantColorName = parser.getNameOfColor(dominant)
   const secondaryColorsNames = secondaryArr.map((item) => {
