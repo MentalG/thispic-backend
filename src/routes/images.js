@@ -14,9 +14,7 @@ const storage = multer.diskStorage({
     cb(null, name)
   }
 })
-const limits = {
-  fileSize: 1024 * 1024 * 5
-}
+const limits = { fileSize: 1024 * 1024 * 5 }
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
     cb(null, true)
@@ -24,11 +22,7 @@ const fileFilter = (req, file, cb) => {
     cb(null, false)
   }
 } 
-const upload = multer({
-  storage,
-  limits,
-  fileFilter
-})
+const upload = multer({ storage, limits, fileFilter })
 
 //Post create image
 router.post('/add', upload.array('productImage', 10), async (req, res) => {
@@ -37,7 +31,7 @@ router.post('/add', upload.array('productImage', 10), async (req, res) => {
     const hash = await parser.getHash256(item.path);
     const isUnique = !(await Image.find({hash: hash })).length;
 
-    if (!isUnique) return res.json({message: 'image like this is already exist'})
+    if (!isUnique) return res.json({message: 'Image like this is already exist'})
 
     const image = new Image({
       name: req.body.name,
@@ -49,6 +43,7 @@ router.post('/add', upload.array('productImage', 10), async (req, res) => {
   
     try {
       const savedImage = await image.save();
+
       res.json(savedImage);
     } catch (error) {
       res.json({ message: error });
@@ -94,6 +89,7 @@ router.get('/', async (req, res) => {
 router.delete('/:imageId', async (req, res) => {
   try {
     const image = await Image.remove({ _id: req.params.imageId });
+
     res.json(image);
   } catch (error) {
     res.json({ message: error });
@@ -107,6 +103,7 @@ router.patch('/:imageId', async (req, res) => {
       { _id: req.params.imageId },
       { $set: { title: req.body.name } }
     );
+
     res.json(image);
   } catch (error) {
     res.json({ message: error });
