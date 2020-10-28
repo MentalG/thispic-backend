@@ -30,11 +30,11 @@ router.post('/create', (req, res) => {
 //GET login user
 router.get('/login', async (req, res) => {
     try {
-        const isExist = !!(await User.find({ email: req.body.email, password: req.body.password })).length;
+        const isExist = !!(await User.find({ email: req.query.email, password: req.query.password })).length;
         
         if (!isExist) res.send({message : 'There is no user like this'})
 
-        jwt.sign(req.body, secretKey, async (err, token) => {
+        jwt.sign(req.query, secretKey, async (err, token) => {
             if (err) res.send(err)
 
             res.send({token})
