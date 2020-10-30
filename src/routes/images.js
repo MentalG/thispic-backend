@@ -31,7 +31,7 @@ router.post('/add', upload.array('productImage', 10), async (req, res) => {
     const hash = await parser.getHash256(item.path);
     const isUnique = !(await Image.find({hash: hash })).length;
 
-    if (!isUnique) return res.json({message: 'Image like this is already exist'})
+    if (!isUnique) return res.send({message: 'Image like this is already exist'})
 
     const image = new Image({
       name: req.body.name,
