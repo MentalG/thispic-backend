@@ -2,7 +2,9 @@ const express = require('express');
 const Image = require('../models/image');
 const multer = require('multer');
 const parser = require('../../parser');
-const { response } = require('express');
+const jwt = require('jsonwebtoken');
+const verifyToken = require('../verify')
+const secretKey = process.env.SECRET_KEY
 
 const router = express.Router();
 const storage = multer.diskStorage({
@@ -26,9 +28,11 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage, limits, fileFilter })
 
 //Post create image
-router.post('/add', upload.array('productImage', 10), async (req, res) => {
+router.post('/add', verifyToken, upload.array('productImage', 10), async (req, res) => {
     try {
-        const imagesPromise = req.files.map(async (item) => {
+          const token = req.headers.authorization.split('"').join('');
+          const user = jwt.verify(token, secretKey)
+          const imagesPromise = req.files.map(async (item) => {
           const colors = await parser.getCountOfColors(item.path);
           const hash = await parser.getHash256(item.path);
           const isUnique = !(await Image.find({hash: hash })).length;
@@ -40,6 +44,7 @@ router.post('/add', upload.array('productImage', 10), async (req, res) => {
             dominant: colors.dominant,
             secondary: colors.secondary,
             imageUrl: item.path,
+            addedBy: user.email,
             hash: hash
           });
 
@@ -49,11 +54,13 @@ router.post('/add', upload.array('productImage', 10), async (req, res) => {
         const images = await Promise.all(imagesPromise)
         
         const savedImages = await Image.insertMany(images);
-        savedImages.map(image => {
-          console.log('asdasd');
-          res.send({message: `${image.name} is added`, dominant: image.dominant, secondary: image.secondary});
-        })
+        const responseMessage = savedImages.map((image) => {
+          const message = [];
 
+          message.push({message: `${image.name} is added`, dominant: image.dominant, secondary: image.secondary});
+          return message;
+        })
+        res.send({responseMessage});
         } catch (error) {
           res.send({ error : error.message });
     }
