@@ -2,6 +2,7 @@ const express = require('express');
 const Image = require('../models/image');
 const multer = require('multer');
 const parser = require('../../parser');
+const { response } = require('express');
 
 const router = express.Router();
 const storage = multer.diskStorage({
@@ -26,29 +27,36 @@ const upload = multer({ storage, limits, fileFilter })
 
 //Post create image
 router.post('/add', upload.array('productImage', 10), async (req, res) => {
-  req.files.map(async (item, index) => {
-    const colors = await parser.getCountOfColors(item.path);
-    const hash = await parser.getHash256(item.path);
-    const isUnique = !(await Image.find({hash: hash })).length;
-
-    if (!isUnique) return res.send({message: 'Image like this is already exist'})
-
-    const image = new Image({
-      name: req.body.name,
-      dominant: colors.dominant,
-      secondary: colors.secondary,
-      imageUrl: item.path,
-      hash: hash
-    });
-  
     try {
-      const savedImage = await image.save();
+        const imagesPromise = req.files.map(async (item) => {
+          const colors = await parser.getCountOfColors(item.path);
+          const hash = await parser.getHash256(item.path);
+          const isUnique = !(await Image.find({hash: hash })).length;
+  
+          if (!isUnique) throw new Error('Image like this is already exist')
+  
+          const image = new Image({
+            name: req.body.name,
+            dominant: colors.dominant,
+            secondary: colors.secondary,
+            imageUrl: item.path,
+            hash: hash
+          });
 
-      res.json(savedImage);
-    } catch (error) {
-      res.json({ message: error });
+          return image
+        })
+
+        const images = await Promise.all(imagesPromise)
+        
+        const savedImages = await Image.insertMany(images);
+        savedImages.map(image => {
+          console.log('asdasd');
+          res.send({message: `${image.name} is added`, dominant: image.dominant, secondary: image.secondary});
+        })
+
+        } catch (error) {
+          res.send({ error : error.message });
     }
-  })
 });
 
 //GET download image by hash 

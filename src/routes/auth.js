@@ -7,24 +7,24 @@ const router = express.Router();
 
 //Post create user
 router.post('/create', (req, res) => {
-    jwt.sign(req.body, secretKey, async (err, token) => {
-        if (err) res.send(err);
-
-        const user = new User({
-            email: req.body.email,
-            password: req.body.password
-        })
-
         try {
+            jwt.sign(req.body, secretKey, async (error, token) => {
+            if (error) res.send({error});
+
+            const user = new User({
+                email: req.body.email,
+                password: req.body.password
+            })
+
             const isUnique = !(await User.find({ email: req.body.email })).length;
 
-            isUnique ? await user.save() : res.json('Email like this is already taken')
+            isUnique ? await user.save() : res.send({ error : 'Email like this is already taken' })
+            
+            res.json({token, message: 'Registation success'})
+        })
         } catch (error) {
-            res.send({ message: error })
+            res.send({ error })
         }
-
-        res.json({token})
-    })
 });
 
 //GET login user
@@ -37,7 +37,7 @@ router.get('/login', async (req, res) => {
         jwt.sign(req.query, secretKey, async (err, token) => {
             if (err) res.send(err)
 
-            res.send({token})
+            res.send({token, message: 'Login success'})
         })
     } catch (error) {
         res.send({message: error})
