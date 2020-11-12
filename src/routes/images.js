@@ -32,6 +32,7 @@ router.post('/add', verifyToken, upload.array('productImage', 10), async (req, r
     try {
           const token = req.headers.authorization.split('"').join('');
           const user = jwt.verify(token, secretKey)
+          
           const imagesPromise = req.files.map(async (item) => {
           const colors = await parser.getCountOfColors(item.path);
           const hash = await parser.getHash256(item.path);
@@ -52,17 +53,12 @@ router.post('/add', verifyToken, upload.array('productImage', 10), async (req, r
         })
 
         const images = await Promise.all(imagesPromise)
-        
         const savedImages = await Image.insertMany(images);
-        const responseMessage = savedImages.map((image) => {
-          const message = [];
 
-          message.push({message: `${image.name} is added`, dominant: image.dominant, secondary: image.secondary});
-          return message;
-        })
-        res.send({responseMessage});
+        res.send({message: {primary: 'Upload Successfully', secondary: `${savedImages[0].name} was successfully uploaded`}, type: 'success'})
+
         } catch (error) {
-          res.send({ error : error.message });
+        res.send({message: {primary: `Upload failed`, secondary: error.toString()}, type: 'error'});
     }
 });
 
